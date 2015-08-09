@@ -246,7 +246,7 @@ class ImportPage extends WizardPage implements SelectionListener, IStructuredCon
     /** Finds all project directories under the given directory */
     private void addProjects(File dir, List<ImportedProject> projects, int prefixLength) {
         if (dir.isDirectory()) {
-            if (LintUtils.isManifestFolder(dir)) {
+            if (isAndroidRoot(dir)) {
                 String relative = dir.getPath();
                 if (relative.length() > prefixLength) {
                     relative = relative.substring(prefixLength);
@@ -261,6 +261,18 @@ class ImportPage extends WizardPage implements SelectionListener, IStructuredCon
                 }
             }
         }
+    }
+
+    /**
+     * Check to see if the provided dir is a potential Android project directory.
+     *
+     * @param dir the directory to check
+     * @return true if dir could be an Android project else false
+     */
+    private static boolean isAndroidRoot(File dir) {
+        // Assume that all gradle projects are possible Android projects
+        boolean gradleRoot = new File(dir, "build.gradle").isFile();
+        return LintUtils.isManifestFolder(dir) || gradleRoot;
     }
 
     private void validatePage() {
