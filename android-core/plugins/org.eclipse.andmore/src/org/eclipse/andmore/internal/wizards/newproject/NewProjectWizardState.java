@@ -48,6 +48,11 @@ public class NewProjectWizardState {
     public Mode mode;
 
     /**
+     * The location of AndroidManifest.xml relative to the project root.
+     */
+    public String androidManifest = "AndroidManifest.xml";
+
+    /**
      * If true, the project should be created from an existing codebase (pointed
      * to by the {@link #projectLocation} or in the case of sample projects, the
      * {@link #chosenSample}. Otherwise, create a brand new project from scratch.
@@ -197,7 +202,7 @@ public class NewProjectWizardState {
      * @param path the path to the project to extract information from
      */
     public void extractFromAndroidManifest(Path path) {
-        String osPath = path.append(SdkConstants.FN_ANDROID_MANIFEST_XML).toOSString();
+        String osPath = path.append(androidManifest).toOSString();
         if (!(new File(osPath).exists())) {
             return;
         }

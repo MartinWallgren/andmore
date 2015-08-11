@@ -35,6 +35,7 @@ import com.android.utils.SdkUtils;
 import org.eclipse.andmore.AndmoreAndroidConstants;
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.project.AndroidManifestHelper;
+import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.andmore.internal.sdk.ProjectState;
 import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.core.resources.IFile;
@@ -110,17 +111,14 @@ public class AndroidTypeMoveParticipant extends MoveParticipant {
             IType type = (IType) element;
             IJavaProject javaProject = (IJavaProject) type.getAncestor(IJavaElement.JAVA_PROJECT);
             mProject = javaProject.getProject();
-            IResource manifestResource = mProject.findMember(AndmoreAndroidConstants.WS_SEP
-                    + SdkConstants.FN_ANDROID_MANIFEST_XML);
 
-            if (manifestResource == null || !manifestResource.exists()
-                    || !(manifestResource instanceof IFile)) {
+            mManifestFile = ProjectHelper.getManifest(mProject);
+            if (mManifestFile == null) {
                 RefactoringUtil.logInfo("Invalid or missing the "
                         + SdkConstants.FN_ANDROID_MANIFEST_XML + " in the " + mProject.getName()
                         + " project.");
                 return false;
             }
-            mManifestFile = (IFile) manifestResource;
             ManifestData manifestData;
             manifestData = AndroidManifestHelper.parseForData(mManifestFile);
             if (manifestData == null) {

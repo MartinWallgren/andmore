@@ -37,6 +37,7 @@ import org.eclipse.andmore.AndmoreAndroidConstants;
 import org.eclipse.andmore.AndmoreAndroidPlugin;
 import org.eclipse.andmore.internal.editors.layout.gle2.DomUtilities;
 import org.eclipse.andmore.internal.project.AndroidManifestHelper;
+import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.andmore.internal.sdk.ProjectState;
 import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.core.resources.IFile;
@@ -175,17 +176,14 @@ public class AndroidPackageRenameParticipant extends RenameParticipant {
                 IJavaProject javaProject = (IJavaProject) mPackageFragment
                         .getAncestor(IJavaElement.JAVA_PROJECT);
                 mProject = javaProject.getProject();
-                IResource manifestResource = mProject.findMember(AndmoreAndroidConstants.WS_SEP
-                        + SdkConstants.FN_ANDROID_MANIFEST_XML);
+                mManifestFile = ProjectHelper.getManifest(mProject);
 
-                if (manifestResource == null || !manifestResource.exists()
-                        || !(manifestResource instanceof IFile)) {
+                if (mManifestFile == null) {
                     RefactoringUtil.logInfo("Invalid or missing the "
                             + SdkConstants.FN_ANDROID_MANIFEST_XML + " in the "
                             + mProject.getName() + " project.");
                     return false;
                 }
-                mManifestFile = (IFile) manifestResource;
                 String packageName = mPackageFragment.getElementName();
                 ManifestData manifestData;
                 manifestData = AndroidManifestHelper.parseForData(mManifestFile);

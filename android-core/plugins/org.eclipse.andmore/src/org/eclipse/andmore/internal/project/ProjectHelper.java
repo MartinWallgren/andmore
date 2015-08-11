@@ -991,8 +991,12 @@ public final class ProjectHelper {
      *         is missing.
      */
     public static IFile getManifest(IProject project) {
+        ProjectState projectState = Sdk.getProjectState(project);
+        if (projectState == null) {
+            return null;
+        }
         IResource r = project.findMember(AndmoreAndroidConstants.WS_SEP
-                + SdkConstants.FN_ANDROID_MANIFEST_XML);
+                + projectState.getAndroidManifest());
 
         if (r == null || r.exists() == false || (r instanceof IFile) == false) {
             return null;

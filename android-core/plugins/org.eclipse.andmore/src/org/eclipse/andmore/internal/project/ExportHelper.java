@@ -108,13 +108,13 @@ public final class ExportHelper {
         try {
             // check if the manifest declares debuggable as true. While this is a release build,
             // debuggable in the manifest will override this and generate a debug build
-            IResource manifestResource = project.findMember(SdkConstants.FN_ANDROID_MANIFEST_XML);
-            if (manifestResource.getType() != IResource.FILE) {
+            IFile manifestResource = ProjectHelper.getManifest(project);
+            if (manifestResource == null) {
                 throw new CoreException(new Status(IStatus.ERROR, AndmoreAndroidPlugin.PLUGIN_ID,
                         String.format("%1$s missing.", SdkConstants.FN_ANDROID_MANIFEST_XML)));
             }
 
-            IFileWrapper manifestFile = new IFileWrapper((IFile) manifestResource);
+            IFileWrapper manifestFile = new IFileWrapper(manifestResource);
             boolean debugMode = AndroidManifest.getDebuggable(manifestFile);
 
             AndroidPrintStream fakeStream = new AndroidPrintStream(null, null, new OutputStream() {

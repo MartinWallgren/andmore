@@ -21,6 +21,8 @@ import com.android.annotations.NonNull;
 
 import org.eclipse.andmore.AndmoreAndroidConstants;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
+import org.eclipse.andmore.internal.sdk.ProjectState;
+import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -37,13 +39,9 @@ import java.util.List;
  */
 class ChangedFileSetHelper {
 
-    final static ChangedFileSet MANIFEST;
     final static ChangedFileSet NATIVE_LIBS;
 
     static {
-        MANIFEST = new ChangedFileSet("manifest",                                  //$NON-NLS-1$
-                SdkConstants.FN_ANDROID_MANIFEST_XML);
-
         // FIXME: move compiled native libs to bin/libs/
         NATIVE_LIBS = new ChangedFileSet(
                 "nativeLibs",
@@ -51,6 +49,14 @@ class ChangedFileSetHelper {
                 SdkConstants.FD_NATIVE_LIBS + "/*/" + SdkConstants.FN_GDBSERVER);  //$NON-NLS-1$
     }
 
+    static ChangedFileSet getManifestCfs(@NonNull IProject project) {
+        ProjectState projectState = Sdk.getProjectState(project);
+        String path = SdkConstants.FN_ANDROID_MANIFEST_XML;
+        if (projectState != null) {
+            path = projectState.getAndroidManifest();
+        }
+        return new ChangedFileSet("manifest", path);                               //$NON-NLS-1$
+    }
     /**
      * Returns a ChangedFileSet for Java resources inside a given project's source folders.
      * @param project the project.

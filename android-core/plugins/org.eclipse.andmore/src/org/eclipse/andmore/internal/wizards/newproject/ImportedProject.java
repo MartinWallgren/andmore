@@ -22,7 +22,7 @@ import com.android.annotations.Nullable;
 import com.android.ide.common.xml.AndroidManifestParser;
 import com.android.ide.common.xml.ManifestData;
 import com.android.ide.common.xml.ManifestData.Activity;
-import com.android.io.FolderWrapper;
+import com.android.io.FileWrapper;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.internal.project.ProjectProperties;
@@ -55,11 +55,13 @@ class ImportedProject {
     private ManifestData mManifest;
     private String mProjectName;
     private String mRelativePath;
+    private final String mManifestPath;
 
-    ImportedProject(File location, String relativePath) {
+    ImportedProject(File location, String relativePath, String manifestPath) {
         super();
         mLocation = location;
         mRelativePath = relativePath;
+        mManifestPath = manifestPath;
     }
 
     File getLocation() {
@@ -70,11 +72,20 @@ class ImportedProject {
         return mRelativePath;
     }
 
+    /**
+     * Get the manifest path relative to the project location
+     *
+     * @return relative path of AndroidManifest.xml
+     */
+    String getManifestPath() {
+        return mManifestPath;
+    }
+
     @Nullable
     ManifestData getManifest() {
         if (mManifest == null) {
             try {
-                mManifest = AndroidManifestParser.parse(new FolderWrapper(mLocation));
+                mManifest = AndroidManifestParser.parse(new FileWrapper(new File(mLocation, mManifestPath)));
             } catch (SAXException e) {
                 // Some sort of error in the manifest file: report to the user in a better way?
                 AndmoreAndroidPlugin.log(e, null);

@@ -393,7 +393,7 @@ public class PreCompilerBuilder extends BaseBuilder {
                         PatternBasedDeltaVisitor visitor = new PatternBasedDeltaVisitor(
                                 project, libProject,
                                 "PRE:LibManifest"); //$NON-NLS-1$
-                        visitor.addSet(ChangedFileSetHelper.MANIFEST);
+                        visitor.addSet(ChangedFileSetHelper.getManifestCfs(libProject));
 
                         ChangedFileSet textSymbolCFS = null;
                         if (isLibrary == false) {
@@ -404,7 +404,8 @@ public class PreCompilerBuilder extends BaseBuilder {
 
                         delta.accept(visitor);
 
-                        mMustMergeManifest |= visitor.checkSet(ChangedFileSetHelper.MANIFEST);
+                        mMustMergeManifest |= visitor.checkSet(ChangedFileSetHelper.
+                                getManifestCfs(libProject));
 
                         if (textSymbolCFS != null) {
                             mMustCompileResources |= visitor.checkSet(textSymbolCFS);
@@ -447,6 +448,7 @@ public class PreCompilerBuilder extends BaseBuilder {
             IFile manifestFile = ProjectHelper.getManifest(project);
 
             if (manifestFile == null) {
+                // TODO: Use the actual path to the manifest in the message
                 String msg = String.format(Messages.s_File_Missing,
                         SdkConstants.FN_ANDROID_MANIFEST_XML);
                 AndmoreAndroidPlugin.printErrorToConsole(project, msg);
@@ -956,7 +958,7 @@ public class PreCompilerBuilder extends BaseBuilder {
         }
 
         IFile outFile = androidOutFolder.getFile(SdkConstants.FN_ANDROID_MANIFEST_XML);
-        IFile manifest = getProject().getFile(SdkConstants.FN_ANDROID_MANIFEST_XML);
+        IFile manifest = ProjectHelper.getManifest(getProject());
 
         // remove existing markers from the manifest.
         // FIXME: only remove from manifest once the markers are put there.
@@ -1009,8 +1011,7 @@ public class PreCompilerBuilder extends BaseBuilder {
             File[] libManifests = new File[libProjects.size()];
             int libIndex = 0;
             for (IProject lib : libProjects) {
-                libManifests[libIndex++] = lib.getFile(SdkConstants.FN_ANDROID_MANIFEST_XML)
-                        .getLocation().toFile();
+                libManifests[libIndex++] = ProjectHelper.getManifest(lib).getLocation().toFile();
             }
 
             if (merger.process(

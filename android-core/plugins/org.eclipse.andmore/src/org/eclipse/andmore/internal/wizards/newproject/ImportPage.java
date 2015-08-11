@@ -251,7 +251,9 @@ class ImportPage extends WizardPage implements SelectionListener, IStructuredCon
                 if (relative.length() > prefixLength) {
                     relative = relative.substring(prefixLength);
                 }
-                projects.add(new ImportedProject(dir, relative));
+                File manifestFile = findManifest(dir);
+                String relativeManifestPath = dir.toURI().relativize(manifestFile.toURI()).getPath();
+                projects.add(new ImportedProject(dir, relative, relativeManifestPath));
             }
 
             File[] children = dir.listFiles();
@@ -273,6 +275,32 @@ class ImportPage extends WizardPage implements SelectionListener, IStructuredCon
         // Assume that all gradle projects are possible Android projects
         boolean gradleRoot = new File(dir, "build.gradle").isFile();
         return LintUtils.isManifestFolder(dir) || gradleRoot;
+    }
+
+    /**
+     * Find a AndroidManifest.xml in the file directory.
+     * If file is a directory the directory is searched recursively for the manifest file.
+     * If file is a file with name AndroidManifest.xml that file is returned
+     *
+     * @param file
+     *            the file or directory to search
+     * @return the fond AndroidManifest.xml file or null if no manifest file was found.
+     */
+    private static File findManifest(File file) {
+        String manifestName = "AndroidManifest.xml";
+        if (file.isDirectory()) {
+            for (File child : file.listFiles()) {
+                File manifestFile = findManifest(child);
+                if (manifestFile != null) {
+                    return manifestFile;
+                }
+            }
+        } else if (file.isFile()) {
+            if (manifestName.equals(file.getName())) {
+                return file;
+            }
+        }
+        return null;
     }
 
     private void validatePage() {

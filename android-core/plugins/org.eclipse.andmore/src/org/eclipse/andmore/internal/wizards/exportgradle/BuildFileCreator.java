@@ -33,6 +33,7 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
+import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.andmore.internal.sdk.ProjectState;
 import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.andmore.io.IFolderWrapper;
@@ -416,8 +417,7 @@ public class BuildFileCreator {
      * subdirectories in the project.
      */
     private void createAndroidSourceSets() {
-        IFolderWrapper projectFolder = new IFolderWrapper(mModule.getProject());
-        IAbstractFile mManifestFile = AndroidManifest.getManifest(projectFolder);
+        IFile mManifestFile = ProjectHelper.getManifest(mModule.getProject());
         if (mManifestFile == null) {
             return;
         }
@@ -435,7 +435,7 @@ public class BuildFileCreator {
 
         mBuildFile.append("    sourceSets {\n"); //$NON-NLS-1$
         mBuildFile.append("        main {\n"); //$NON-NLS-1$
-        mBuildFile.append("            manifest.srcFile '" + SdkConstants.FN_ANDROID_MANIFEST_XML + "'\n"); //$NON-NLS-1$
+        mBuildFile.append("            manifest.srcFile '" + mManifestFile.getProjectRelativePath() + "'\n"); //$NON-NLS-1$
         mBuildFile.append("            java.srcDirs = [" + srcPaths + "]\n"); //$NON-NLS-1$
         mBuildFile.append("            resources.srcDirs = [" + srcPaths + "]\n"); //$NON-NLS-1$
         mBuildFile.append("            aidl.srcDirs = [" + srcPaths + "]\n"); //$NON-NLS-1$

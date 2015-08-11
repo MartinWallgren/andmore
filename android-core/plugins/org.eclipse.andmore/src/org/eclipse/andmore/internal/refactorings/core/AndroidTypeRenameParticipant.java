@@ -42,6 +42,7 @@ import org.eclipse.andmore.internal.editors.layout.gle2.DomUtilities;
 import org.eclipse.andmore.internal.editors.manifest.ManifestInfo;
 import org.eclipse.andmore.internal.project.AndroidManifestHelper;
 import org.eclipse.andmore.internal.project.BaseProjectHelper;
+import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.andmore.internal.sdk.ProjectState;
 import org.eclipse.andmore.internal.sdk.Sdk;
 import org.eclipse.core.resources.IFile;
@@ -137,11 +138,9 @@ public class AndroidTypeRenameParticipant extends RenameParticipant {
             IType type = (IType) element;
             IJavaProject javaProject = (IJavaProject) type.getAncestor(IJavaElement.JAVA_PROJECT);
             mProject = javaProject.getProject();
-            IResource manifestResource = mProject.findMember(AndmoreAndroidConstants.WS_SEP
-                    + SdkConstants.FN_ANDROID_MANIFEST_XML);
+            mManifestFile = ProjectHelper.getManifest(mProject);
 
-            if (manifestResource == null || !manifestResource.exists()
-                    || !(manifestResource instanceof IFile)) {
+            if (mManifestFile == null) {
                 RefactoringUtil.logInfo(
                         String.format("Invalid or missing file %1$s in project %2$s",
                                 SdkConstants.FN_ANDROID_MANIFEST_XML,
@@ -161,7 +160,6 @@ public class AndroidTypeRenameParticipant extends RenameParticipant {
                 AndmoreAndroidPlugin.log(e, null);
             }
 
-            mManifestFile = (IFile) manifestResource;
             ManifestData manifestData;
             manifestData = AndroidManifestHelper.parseForData(mManifestFile);
             if (manifestData == null) {
@@ -234,11 +232,9 @@ public class AndroidTypeRenameParticipant extends RenameParticipant {
             Collection<ProjectState> parentProjects = projectState.getFullParentProjects();
             for (ProjectState parentProject : parentProjects) {
                 IProject project = parentProject.getProject();
-                IResource manifestResource = project.findMember(AndmoreAndroidConstants.WS_SEP
-                        + SdkConstants.FN_ANDROID_MANIFEST_XML);
-                if (manifestResource != null && manifestResource.exists()
-                        && manifestResource instanceof IFile) {
-                    addManifestFileChanges((IFile) manifestResource, result);
+                IFile manifest = ProjectHelper.getManifest(project);
+                if (manifest != null) {
+                    addManifestFileChanges(manifest, result);
                 }
                 addLayoutFileChanges(project, result);
                 addJavaChanges(project, result, pm);

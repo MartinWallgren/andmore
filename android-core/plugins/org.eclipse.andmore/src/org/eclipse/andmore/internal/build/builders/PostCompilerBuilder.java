@@ -392,7 +392,7 @@ public class PostCompilerBuilder extends BaseBuilder {
                     }
 
                     // resource to the AndroidManifest.xml file
-                    IFile manifestFile = project.getFile(SdkConstants.FN_ANDROID_MANIFEST_XML);
+                    IFile manifestFile = ProjectHelper.getManifest(project);
                     String appPackage = AndroidManifest.getPackage(new IFileWrapper(manifestFile));
 
                     IFolder javaOutputFolder = BaseProjectHelper.getJavaOutputFolder(project);

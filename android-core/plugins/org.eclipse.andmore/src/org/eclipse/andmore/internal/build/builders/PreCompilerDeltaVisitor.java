@@ -200,37 +200,39 @@ class PreCompilerDeltaVisitor extends BaseDeltaVisitor implements IResourceDelta
                 mInRes = true;
                 mSourceFolder = null;
                 return true;
-            } else if (SdkConstants.FN_ANDROID_MANIFEST_XML.equalsIgnoreCase(segments[1])) {
-                // any change in the manifest could trigger a new R.java
-                // class, so we don't need to check the delta kind
-                if (delta.getKind() != IResourceDelta.REMOVED) {
-                    // clean the error markers on the file.
-                    IFile manifestFile = (IFile)resource;
-
-                    if (manifestFile.exists()) {
-                        manifestFile.deleteMarkers(AndmoreAndroidConstants.MARKER_XML, true,
-                                IResource.DEPTH_ZERO);
-                        manifestFile.deleteMarkers(AndmoreAndroidConstants.MARKER_ANDROID, true,
-                                IResource.DEPTH_ZERO);
-                    }
-
-                    // parse the manifest for data and error
-                    ManifestData manifestData = AndroidManifestHelper.parse(
-                            new IFileWrapper(manifestFile), true /*gatherData*/, this);
-
-                    if (manifestData != null) {
-                        mJavaPackage = manifestData.getPackage();
-                        mMinSdkVersion = manifestData.getMinSdkVersionString();
-                    }
-
-                    mCheckedManifestXml = true;
-                }
-                mChangedManifest = true;
-
-                // we don't want to go to the children, not like they are
-                // any for this resource anyway.
-                return false;
             }
+        }
+        // If the name is AndroidManifest.xml, we assume that it is THE AndroidManifest.xml
+        if (SdkConstants.FN_ANDROID_MANIFEST_XML.equalsIgnoreCase(segments[segments.length - 1])) {
+            // any change in the manifest could trigger a new R.java
+            // class, so we don't need to check the delta kind
+            if (delta.getKind() != IResourceDelta.REMOVED) {
+                // clean the error markers on the file.
+                IFile manifestFile = (IFile)resource;
+
+                if (manifestFile.exists()) {
+                    manifestFile.deleteMarkers(AndmoreAndroidConstants.MARKER_XML, true,
+                            IResource.DEPTH_ZERO);
+                    manifestFile.deleteMarkers(AndmoreAndroidConstants.MARKER_ANDROID, true,
+                            IResource.DEPTH_ZERO);
+                }
+
+                // parse the manifest for data and error
+                ManifestData manifestData = AndroidManifestHelper.parse(
+                        new IFileWrapper(manifestFile), true /*gatherData*/, this);
+
+                if (manifestData != null) {
+                    mJavaPackage = manifestData.getPackage();
+                    mMinSdkVersion = manifestData.getMinSdkVersionString();
+                }
+
+                mCheckedManifestXml = true;
+            }
+            mChangedManifest = true;
+
+            // we don't want to go to the children, not like they are
+            // any for this resource anyway.
+            return false;
         }
 
         // at this point we can either be in the source folder or in the

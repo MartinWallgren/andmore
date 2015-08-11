@@ -32,6 +32,7 @@ import org.eclipse.andmore.internal.editors.descriptors.ReferenceAttributeDescri
 import org.eclipse.andmore.internal.editors.uimodel.UiAttributeNode;
 import org.eclipse.andmore.internal.editors.uimodel.UiElementNode;
 import org.eclipse.andmore.internal.project.AndroidManifestHelper;
+import org.eclipse.andmore.internal.project.ProjectHelper;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -431,7 +432,8 @@ public class ExtractStringRefactoring extends Refactoring {
                 // similar to
                 //    project/res/<type>[-<configuration>]/*.xml
                 //    project/AndroidManifest.xml
-                // There is no support for sub folders, so the segment count must be 4 or 2.
+                // Resource xmls must have a segment count of 4,
+                // AndroidManifest.xml can be located anywhere.
                 // We don't need to check the type folder name because a/ we only accept
                 // an AndroidXmlEditor source and b/ aapt generates a compilation error for
                 // unknown folders.
@@ -439,8 +441,7 @@ public class ExtractStringRefactoring extends Refactoring {
                 IPath path = mFile.getFullPath();
                 if ((path.segmentCount() == 4 &&
                      path.segment(1).equalsIgnoreCase(SdkConstants.FD_RESOURCES)) ||
-                    (path.segmentCount() == 2 &&
-                     path.segment(1).equalsIgnoreCase(SdkConstants.FN_ANDROID_MANIFEST_XML))) {
+                    (mFile.getName().equalsIgnoreCase(SdkConstants.FN_ANDROID_MANIFEST_XML))) {
                     if (!findSelectionInXmlFile(mFile, status, monitor)) {
                         return status;
                     }
@@ -1769,11 +1770,11 @@ public class ExtractStringRefactoring extends Refactoring {
         // the FQCN of the R class.
         String packageName = null;
         String error = null;
-        IResource manifestFile = mProject.findMember(SdkConstants.FN_ANDROID_MANIFEST_XML);
-        if (manifestFile == null || manifestFile.getType() != IResource.FILE) {
+        IFile manifestFile = ProjectHelper.getManifest(mProject);
+        if (manifestFile == null) {
             error = "File not found";
         } else {
-            ManifestData manifestData = AndroidManifestHelper.parseForData((IFile) manifestFile);
+            ManifestData manifestData = AndroidManifestHelper.parseForData(manifestFile);
             if (manifestData == null) {
                 error = "Invalid content";
             } else {

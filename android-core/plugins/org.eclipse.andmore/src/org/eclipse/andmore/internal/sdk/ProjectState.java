@@ -226,6 +226,10 @@ public final class ProjectState {
         mTarget = target;
     }
 
+    public String getAndroidManifest() {
+        return mProperties.getProperty("manifest.file");
+    }
+
     /**
      * Returns the project's target's hash string.
      * <p/>If {@link #getTarget()} returns a valid object, then this returns the value of

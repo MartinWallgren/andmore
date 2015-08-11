@@ -106,6 +106,7 @@ import java.util.Set;
  */
 public class NewProjectCreator  {
 
+    private static final String PARAM_ANDROID_MANIFEST = "PARAM_ANDROID_MANIFEST";  //$NON-NLS-1$
     private static final String PARAM_SDK_TOOLS_DIR = "ANDROID_SDK_TOOLS";          //$NON-NLS-1$
     private static final String PARAM_ACTIVITY = "ACTIVITY_NAME";                   //$NON-NLS-1$
     private static final String PARAM_APPLICATION = "APPLICATION_NAME";             //$NON-NLS-1$
@@ -359,6 +360,7 @@ public class NewProjectCreator  {
                     workspace.newProjectDescription(project.getName());
 
             final Map<String, Object> parameters = new HashMap<String, Object>();
+            parameters.put(PARAM_ANDROID_MANIFEST, p.getManifestPath());
             parameters.put(PARAM_PROJECT, projectName);
             parameters.put(PARAM_PACKAGE, packageName);
             parameters.put(PARAM_SDK_TOOLS_DIR, AndmoreAndroidPlugin.getOsSdkToolsFolder());
@@ -834,6 +836,15 @@ public class NewProjectCreator  {
 
         if (isAndroidProject) {
             Sdk.getCurrent().initProject(project, target);
+            ProjectState state = Sdk.getProjectState(project);
+            if (state != null) {
+                // make a working copy of the properties
+                ProjectPropertiesWorkingCopy properties =
+                        state.getProperties().makeWorkingCopy();
+                //TODO: Where should we store the manifest path?
+                properties.setProperty("manifest.file", (String) parameters.get(PARAM_ANDROID_MANIFEST));
+                properties.save();
+            }
         }
 
         // Fix the project to make sure all properties are as expected.
@@ -893,6 +904,7 @@ public class NewProjectCreator  {
 
         final Map<String, String> dictionary = null;
         final Map<String, Object> parameters = new HashMap<String, Object>();
+        parameters.put(PARAM_ANDROID_MANIFEST, SdkConstants.FN_ANDROID_MANIFEST_XML);
         parameters.put(PARAM_SDK_TARGET, target);
         parameters.put(PARAM_SRC_FOLDER, SdkConstants.FD_SOURCES);
         parameters.put(PARAM_IS_NEW_PROJECT, false);
@@ -978,7 +990,13 @@ public class NewProjectCreator  {
             throws CoreException, IOException {
 
         // get IFile to the manifest and check if it's not already there.
-        IFile file = project.getFile(SdkConstants.FN_ANDROID_MANIFEST_XML);
+        String filePath;
+        if (parameters.containsKey(PARAM_ANDROID_MANIFEST)) {
+            filePath = (String) parameters.get(PARAM_ANDROID_MANIFEST);
+        } else {
+            filePath = SdkConstants.FN_ANDROID_MANIFEST_XML;
+        }
+        IFile file = project.getFile(filePath);
         if (!file.exists()) {
 
             // Read manifest template
